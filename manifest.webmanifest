@@ -1,0 +1,12 @@
+{
+  "name": "拼音星球 · 拼读练习",
+  "short_name": "拼音星球",
+  "description": "分类选择普通话拼音，随机生成带调音节并点读。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f4ec",
+  "theme_color": "#f7f4ec",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

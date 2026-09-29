@@ -1,0 +1,14 @@
+{
+  "name": "studypinyin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "generate:voices": "python scripts/generate-voice-examples.py"
+  },
+  "devDependencies": {
+    "pinyin-pro": "3.8.2"
+  }
+}

@@ -27,16 +27,12 @@ const state = {
   notice: '',
 };
 
-const speaker = window.speechSynthesis;
-const hasSpeech = Boolean(speaker && window.SpeechSynthesisUtterance);
+let activeAudio;
 let speechStatusTimer;
-let speechWatchdog;
 let speechRequest = 0;
 
-if (speaker) {
-  try { speaker.getVoices(); } catch { /* 部分浏览器在语音服务就绪前会暂不返回音色。 */ }
-  speaker.addEventListener?.('voiceschanged', () => speaker.getVoices());
-}
+const audioPath = (entry) => `./assets/audio/${entry.spelling}${entry.tone}.mp3`;
+const hasAudio = (entry) => Boolean(VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`]);
 
 function readStorage(key, store) {
   try { return JSON.parse(store.getItem(key)); } catch { return null; }
@@ -130,13 +126,13 @@ function homeView() {
             <details class="filter-box" id="final-filter"><summary><span><strong>韵母</strong><small>已选 ${state.finals.size} / ${ALL_FINALS.length} 个</small></span>${icon('chevron', 18)}</summary><div class="filter-body"><div class="filter-actions"><button type="button" data-select-all="final">全选</button><button type="button" data-clear="final">清空</button></div>${chipGroups(FINAL_GROUPS, 'final', state.finals)}</div></details>
             <div class="medial-filter"><span><strong>介母</strong><small>用于筛选三拼音节</small></span><div class="chips">${ALL_MEDIALS.map((value) => `<button class="chip ${state.medials.has(value) ? 'selected' : ''}" type="button" data-medial="${value}" aria-pressed="${state.medials.has(value)}">${value}</button>`).join('')}</div></div>
             <label class="rare-toggle"><input type="checkbox" id="rare-toggle" ${state.includeRare ? 'checked' : ''}/><span class="toggle-track"></span><span><strong>加入生僻与口语音节</strong><small>例如 ê、den、yo 等少见读音</small></span></label>
-            <label class="rare-toggle"><input type="checkbox" id="unattested-toggle" ${state.includeUnattested ? 'checked' : ''}/><span class="toggle-track"></span><span><strong>探索所有声调组合</strong><small>包含没有例字的拼读练习，发音因设备而异</small></span></label>
+            <label class="rare-toggle"><input type="checkbox" id="unattested-toggle" ${state.includeUnattested ? 'checked' : ''}/><span class="toggle-track"></span><span><strong>探索所有声调组合</strong><small>包含没有例字的拼读练习，部分组合暂无点读音频</small></span></label>
           </section>
           <section class="panel quantity-panel" aria-labelledby="quantity-title"><div class="panel-heading"><div><h3 id="quantity-title">每组卡片数量</h3><p>选一个适合自己的练习节奏</p></div></div><div class="quantity-options">${counts.map((count) => `<button class="quantity-button ${state.count === count ? 'selected' : ''}" type="button" data-count="${count}" aria-pressed="${state.count === count}">${count}<span>张</span></button>`).join('')}</div></section>
           <div class="generate-bar"><div><strong>${available.size} 个可选音节</strong><small>搭配已选声调，共 ${total} 种练习卡片</small></div><button class="primary-button" type="button" data-generate ${canGenerate ? '' : 'disabled'}>生成拼音卡片 ${icon('arrow', 20)}</button></div>
           ${canGenerate ? '' : '<p class="empty-hint" role="status">当前筛选没有可用音节，请增加声母、韵母或声调。</p>'}
         </div>
-        <aside class="sidebar"><div class="aside-sticky"><div class="info-card"><div class="info-header"><span class="info-icon">✳</span><span>拼音小知识</span></div><h3>一个音节，<br/>可以这样拆。</h3><div class="split-example"><span><small>声母</small><b>b</b></span><i>+</i><span><small>介母</small><b>i</b></span><i>+</i><span><small>韵母</small><b>ao</b></span></div><div class="split-result">b + i + ao <span>→</span> biāo</div><p>像 “biāo” 这样，由声母、介母和韵母组成的音节，叫做<strong>三拼音节</strong>。</p></div><div class="tip-card"><span class="tip-icon">♫</span><div><strong>戴上耳机，更容易听清声调</strong><p>卡片上的喇叭可随时重复点读。发音由设备的中文语音能力提供。</p></div></div></div></aside>
+        <aside class="sidebar"><div class="aside-sticky"><div class="info-card"><div class="info-header"><span class="info-icon">✳</span><span>拼音小知识</span></div><h3>一个音节，<br/>可以这样拆。</h3><div class="split-example"><span><small>声母</small><b>b</b></span><i>+</i><span><small>介母</small><b>i</b></span><i>+</i><span><small>韵母</small><b>ao</b></span></div><div class="split-result">b + i + ao <span>→</span> biāo</div><p>像 “biāo” 这样，由声母、介母和韵母组成的音节，叫做<strong>三拼音节</strong>。</p></div><div class="tip-card"><span class="tip-icon">♫</span><div><strong>戴上耳机，更容易听清声调</strong><p>点读音频由网页提供，不依赖手机系统语音。</p></div></div></div></aside>
       </div>
     </main>${footer()}`;
 }
@@ -151,12 +147,13 @@ function practiceView() {
   if (!Array.isArray(state.deck) || !state.deck.length) return `${nav('practice')}<main class="missing-deck"><span>✳</span><h1>还没有拼音卡片</h1><p>先选择想练习的内容，再生成一组卡片吧。</p><a class="primary-button" href="#/">去选择 ${icon('arrow', 20)}</a></main>${footer()}`;
   return `${nav('practice')}<main class="practice-page"><div class="practice-top"><a href="#/" class="back-link">${icon('back', 18)} 返回设置</a><div class="practice-actions"><button type="button" class="quiet-button" data-regenerate>${icon('shuffle', 18)} 换一组</button></div></div>
     <section class="practice-intro"><div><span class="eyebrow"><span class="eyebrow-star">✳</span> 你的专属练习</span><h1>今天的拼音卡片<span>。</span></h1><p>点击带调拼音即可听发音，也可点喇叭重复朗读。</p></div><div class="practice-count"><b>${state.deck.length}</b><span>张拼音卡片</span></div></section>
-    <div class="practice-toolbar"><div class="practice-legend"><span class="legend-dot"></span> 带调拼音 <span class="divider"></span> <span class="legend-rare"></span> 生僻音节</div><div class="speech-hint ${hasSpeech ? '' : 'visible'}" id="speech-hint" role="status" aria-live="polite">${hasSpeech ? '点击拼音即可点读' : '当前浏览器不支持语音朗读'}</div></div>
+    <div class="practice-toolbar"><div class="practice-legend"><span class="legend-dot"></span> 带调拼音 <span class="divider"></span> <span class="legend-rare"></span> 生僻音节</div><div class="speech-hint" id="speech-hint" role="status" aria-live="polite">点击拼音即可点读，音频会按需加载</div></div>
     <section class="card-grid" aria-label="拼音练习卡片">${state.deck.map((entry, index) => {
       const item = SYLLABLES.find((candidate) => candidate.spelling === entry.spelling);
       if (!item) return '';
       const example = VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`];
-      return `<article class="syllable-card ${item.rare ? 'rare' : ''} ${state.playing === index ? 'playing' : ''}" data-card-play="${index}"><div class="card-top"><span class="card-number">${String(index + 1).padStart(2, '0')}</span><span class="card-kind">${item.kind}</span></div><button class="syllable-display" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}" ${hasSpeech ? '' : 'disabled'}>${withTone(item.spelling, entry.tone)}</button><div class="syllable-plain">${item.spelling} · ${TONES.find((tone) => tone.value === entry.tone)?.name || ''}${example ? ` · 例${example.length > 1 ? '词' : '字'} ${example}` : ''}</div><div class="card-bottom"><span class="card-breakdown">${breakdown(item)}</span><button class="play-button" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}" ${hasSpeech ? '' : 'disabled'}>${icon('sound', 21)}</button></div></article>`;
+      const available = hasAudio(entry);
+      return `<article class="syllable-card ${item.rare ? 'rare' : ''} ${state.playing === index ? 'playing' : ''}" data-card-play="${index}"><div class="card-top"><span class="card-number">${String(index + 1).padStart(2, '0')}</span><span class="card-kind">${item.kind}</span></div><button class="syllable-display" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}" ${available ? '' : 'disabled'}>${withTone(item.spelling, entry.tone)}</button><div class="syllable-plain">${item.spelling} · ${TONES.find((tone) => tone.value === entry.tone)?.name || ''}${example ? ` · 例${example.length > 1 ? '词' : '字'} ${example}` : ''}</div><div class="card-bottom"><span class="card-breakdown">${breakdown(item)}</span><button class="play-button" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}" ${available ? '' : 'disabled'}>${icon('sound', 21)}</button></div></article>`;
     }).join('')}</section><div class="practice-bottom"><span>读完这一组，给自己一个小小的掌声！</span><button class="secondary-button" type="button" data-regenerate>再来一组 ${icon('arrow', 19)}</button></div>
   </main>${footer()}`;
 }
@@ -235,59 +232,33 @@ function setSpeechStatus(message, kind = 'info', autoHide = false) {
   if (autoHide) speechStatusTimer = window.setTimeout(() => hint.classList.remove('visible'), 3500);
 }
 
-function finishSpeech(requestId, message, kind = 'info') {
+function finishAudio(requestId, message, kind = 'info') {
   if (requestId !== speechRequest) return;
-  window.clearTimeout(speechWatchdog);
   state.playing = -1;
   document.querySelectorAll('.syllable-card').forEach((card) => card.classList.remove('playing'));
   setSpeechStatus(message, kind, kind !== 'error');
 }
 
 function speak(index) {
-  if (!hasSpeech) return;
   const entry = state.deck[index];
   if (!entry) return;
+  if (!hasAudio(entry)) {
+    setSpeechStatus('这个拼音组合暂时没有对应的标准例音。', 'error');
+    return;
+  }
   const requestId = ++speechRequest;
-  if (speaker.speaking || speaker.pending || speaker.paused) speaker.cancel();
-  const example = VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`];
-  const utterance = new SpeechSynthesisUtterance(example || withTone(entry.spelling, entry.tone));
-  utterance.lang = 'zh-CN';
-  utterance.rate = 0.78;
-  let voices = [];
-  try { voices = speaker.getVoices(); } catch { /* 继续尝试浏览器默认语音。 */ }
-  const chineseVoice = voices.find((voice) => /^zh[-_]CN/i.test(voice.lang))
-    || voices.find((voice) => /^zh/i.test(voice.lang));
-  if (chineseVoice) utterance.voice = chineseVoice;
+  if (activeAudio) {
+    activeAudio.pause();
+    activeAudio.currentTime = 0;
+  }
+  const audio = new Audio(audioPath(entry));
+  activeAudio = audio;
   state.playing = index;
   document.querySelectorAll('.syllable-card').forEach((card, cardIndex) => card.classList.toggle('playing', cardIndex === index));
-  setSpeechStatus(chineseVoice
-    ? `正在朗读 ${withTone(entry.spelling, entry.tone)}${example ? `（例${example.length > 1 ? '词' : '字'} ${example}）` : '（设备语音合成）'}`
-    : '未检测到中文音色，正在尝试系统默认语音；若无声音，请检查系统文字转语音设置。');
-  utterance.onend = () => {
-    finishSpeech(requestId, '朗读结束。若未听到声音，请检查媒体音量和系统文字转语音设置。');
-  };
-  utterance.onerror = (event) => {
-    const messages = {
-      'audio-busy': '设备音频正忙，请稍后再试。',
-      'audio-hardware': '未找到可用的音频输出，请检查媒体音量、静音或蓝牙输出。',
-      network: '语音引擎连接失败，请检查网络后重试。',
-      'synthesis-unavailable': '浏览器没有可用的语音合成引擎，请在系统设置中启用文字转语音。',
-      'synthesis-failed': '语音合成失败，请检查系统文字转语音引擎后重试。',
-      'language-unavailable': '设备没有可用的中文语音，请在系统文字转语音设置中选择或下载中文语音。',
-      'voice-unavailable': '所选语音不可用，请重启浏览器或更换中文语音引擎。',
-      'text-too-long': '朗读内容过长，请重新点读。',
-      interrupted: '朗读被系统中断，请稍后重试。',
-      canceled: '朗读已取消。',
-    };
-    finishSpeech(requestId, messages[event.error] || `语音播放失败（${event.error || '未知错误'}），请检查系统文字转语音设置。`, 'error');
-  };
-  window.clearTimeout(speechWatchdog);
-  speechWatchdog = window.setTimeout(() => {
-    finishSpeech(requestId, '浏览器没有返回播放结果。请检查系统文字转语音引擎，或换用其他浏览器。', 'error');
-  }, 12000);
-  try { speaker.speak(utterance); } catch (error) {
-    finishSpeech(requestId, `浏览器启动语音失败（${error.name || '未知错误'}），请检查系统文字转语音设置。`, 'error');
-  }
+  setSpeechStatus(`正在播放 ${withTone(entry.spelling, entry.tone)}${VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`] ? `（例${VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`].length > 1 ? '词' : '字'} ${VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`]}）` : ''}`);
+  audio.onended = () => finishAudio(requestId, '播放结束。');
+  audio.onerror = () => finishAudio(requestId, '音频加载失败，请检查网络后重试。', 'error');
+  audio.play().catch(() => finishAudio(requestId, '音频无法播放，请轻点拼音后重试。', 'error'));
 }
 
 app.addEventListener('click', (event) => {
@@ -326,7 +297,7 @@ app.addEventListener('change', (event) => {
   }
 });
 
-window.addEventListener('hashchange', () => { speaker?.cancel(); state.playing = -1; render(); window.scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { activeAudio?.pause(); state.playing = -1; render(); window.scrollTo(0, 0); });
 render();
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {

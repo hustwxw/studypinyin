@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -25,5 +25,17 @@ for (const file of files) {
   await mkdir(path.dirname(target), { recursive: true });
   await copyFile(path.join(root, file), target);
 }
+
+async function copyDirectory(source, target) {
+  await mkdir(target, { recursive: true });
+  for (const entry of await readdir(source, { withFileTypes: true })) {
+    const from = path.join(source, entry.name);
+    const to = path.join(target, entry.name);
+    if (entry.isDirectory()) await copyDirectory(from, to);
+    else await copyFile(from, to);
+  }
+}
+
+await copyDirectory(path.join(root, 'assets/audio'), path.join(output, 'assets/audio'));
 
 console.log(`打包完成：dist/（${files.length} 个文件）`);

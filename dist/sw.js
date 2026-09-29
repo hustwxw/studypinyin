@@ -1,5 +1,5 @@
-const CACHE = 'studypinyin-v9';
-const ASSETS = ['./', './index.html', './src/main.js?v=9', './src/pinyin-data.js', './src/voice-examples.js', './src/styles.css?v=9', './assets/noto-sans-pinyin.woff2', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'studypinyin-v10';
+const ASSETS = ['./', './index.html', './src/main.js?v=10', './src/pinyin-data.js', './src/voice-examples.js', './src/styles.css?v=10', './assets/noto-sans-pinyin.woff2', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));

@@ -29,6 +29,14 @@ const state = {
 
 const speaker = window.speechSynthesis;
 const hasSpeech = Boolean(speaker && window.SpeechSynthesisUtterance);
+let speechStatusTimer;
+let speechWatchdog;
+let speechRequest = 0;
+
+if (speaker) {
+  try { speaker.getVoices(); } catch { /* 部分浏览器在语音服务就绪前会暂不返回音色。 */ }
+  speaker.addEventListener?.('voiceschanged', () => speaker.getVoices());
+}
 
 function readStorage(key, store) {
   try { return JSON.parse(store.getItem(key)); } catch { return null; }
@@ -143,7 +151,7 @@ function practiceView() {
   if (!Array.isArray(state.deck) || !state.deck.length) return `${nav('practice')}<main class="missing-deck"><span>✳</span><h1>还没有拼音卡片</h1><p>先选择想练习的内容，再生成一组卡片吧。</p><a class="primary-button" href="#/">去选择 ${icon('arrow', 20)}</a></main>${footer()}`;
   return `${nav('practice')}<main class="practice-page"><div class="practice-top"><a href="#/" class="back-link">${icon('back', 18)} 返回设置</a><div class="practice-actions"><button type="button" class="quiet-button" data-regenerate>${icon('shuffle', 18)} 换一组</button></div></div>
     <section class="practice-intro"><div><span class="eyebrow"><span class="eyebrow-star">✳</span> 你的专属练习</span><h1>今天的拼音卡片<span>。</span></h1><p>点击卡片，听听这个音节怎么读。再试着自己大声读一遍！</p></div><div class="practice-count"><b>${state.deck.length}</b><span>张拼音卡片</span></div></section>
-    <div class="practice-toolbar"><div class="practice-legend"><span class="legend-dot"></span> 带调拼音 <span class="divider"></span> <span class="legend-rare"></span> 生僻音节</div><div class="speech-hint" id="speech-hint">${hasSpeech ? '点击卡片即可点读' : '当前浏览器不支持语音朗读'}</div></div>
+    <div class="practice-toolbar"><div class="practice-legend"><span class="legend-dot"></span> 带调拼音 <span class="divider"></span> <span class="legend-rare"></span> 生僻音节</div><div class="speech-hint ${hasSpeech ? '' : 'visible'}" id="speech-hint" role="status" aria-live="polite">${hasSpeech ? '点击卡片即可点读' : '当前浏览器不支持语音朗读'}</div></div>
     <section class="card-grid" aria-label="拼音练习卡片">${state.deck.map((entry, index) => {
       const item = SYLLABLES.find((candidate) => candidate.spelling === entry.spelling);
       if (!item) return '';
@@ -217,30 +225,69 @@ function rerenderPreservingDetails() {
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
 }
 
+function setSpeechStatus(message, kind = 'info', autoHide = false) {
+  const hint = document.getElementById('speech-hint');
+  if (!hint) return;
+  window.clearTimeout(speechStatusTimer);
+  hint.textContent = message;
+  hint.dataset.state = kind;
+  hint.classList.add('visible');
+  if (autoHide) speechStatusTimer = window.setTimeout(() => hint.classList.remove('visible'), 3500);
+}
+
+function finishSpeech(requestId, message, kind = 'info') {
+  if (requestId !== speechRequest) return;
+  window.clearTimeout(speechWatchdog);
+  state.playing = -1;
+  document.querySelectorAll('.syllable-card').forEach((card) => card.classList.remove('playing'));
+  setSpeechStatus(message, kind, kind !== 'error');
+}
+
 function speak(index) {
   if (!hasSpeech) return;
   const entry = state.deck[index];
   if (!entry) return;
-  speaker.cancel();
+  const requestId = ++speechRequest;
+  if (speaker.speaking || speaker.pending || speaker.paused) speaker.cancel();
   const example = VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`];
   const utterance = new SpeechSynthesisUtterance(example || withTone(entry.spelling, entry.tone));
   utterance.lang = 'zh-CN';
   utterance.rate = 0.78;
-  const chineseVoice = speaker.getVoices().find((voice) => /^zh[-_]CN/i.test(voice.lang))
-    || speaker.getVoices().find((voice) => /^zh/i.test(voice.lang));
+  let voices = [];
+  try { voices = speaker.getVoices(); } catch { /* 继续尝试浏览器默认语音。 */ }
+  const chineseVoice = voices.find((voice) => /^zh[-_]CN/i.test(voice.lang))
+    || voices.find((voice) => /^zh/i.test(voice.lang));
   if (chineseVoice) utterance.voice = chineseVoice;
   state.playing = index;
   document.querySelectorAll('.syllable-card').forEach((card, cardIndex) => card.classList.toggle('playing', cardIndex === index));
-  const hint = document.getElementById('speech-hint');
-  if (hint) hint.textContent = chineseVoice
+  setSpeechStatus(chineseVoice
     ? `正在朗读 ${withTone(entry.spelling, entry.tone)}${example ? `（例${example.length > 1 ? '词' : '字'} ${example}）` : '（设备语音合成）'}`
-    : '设备未检测到中文语音，朗读效果可能不准确';
-  utterance.onend = utterance.onerror = () => {
-    state.playing = -1;
-    document.querySelectorAll('.syllable-card').forEach((card) => card.classList.remove('playing'));
-    if (hint) hint.textContent = '点击卡片即可点读';
+    : '未检测到中文音色，正在尝试系统默认语音；若无声音，请检查系统文字转语音设置。');
+  utterance.onend = () => {
+    finishSpeech(requestId, '朗读结束。若未听到声音，请检查媒体音量和系统文字转语音设置。');
   };
-  speaker.speak(utterance);
+  utterance.onerror = (event) => {
+    const messages = {
+      'audio-busy': '设备音频正忙，请稍后再试。',
+      'audio-hardware': '未找到可用的音频输出，请检查媒体音量、静音或蓝牙输出。',
+      network: '语音引擎连接失败，请检查网络后重试。',
+      'synthesis-unavailable': '浏览器没有可用的语音合成引擎，请在系统设置中启用文字转语音。',
+      'synthesis-failed': '语音合成失败，请检查系统文字转语音引擎后重试。',
+      'language-unavailable': '设备没有可用的中文语音，请在系统文字转语音设置中选择或下载中文语音。',
+      'voice-unavailable': '所选语音不可用，请重启浏览器或更换中文语音引擎。',
+      'text-too-long': '朗读内容过长，请重新点读。',
+      interrupted: '朗读被系统中断，请稍后重试。',
+      canceled: '朗读已取消。',
+    };
+    finishSpeech(requestId, messages[event.error] || `语音播放失败（${event.error || '未知错误'}），请检查系统文字转语音设置。`, 'error');
+  };
+  window.clearTimeout(speechWatchdog);
+  speechWatchdog = window.setTimeout(() => {
+    finishSpeech(requestId, '浏览器没有返回播放结果。请检查系统文字转语音引擎，或换用其他浏览器。', 'error');
+  }, 12000);
+  try { speaker.speak(utterance); } catch (error) {
+    finishSpeech(requestId, `浏览器启动语音失败（${error.name || '未知错误'}），请检查系统文字转语音设置。`, 'error');
+  }
 }
 
 app.addEventListener('click', (event) => {

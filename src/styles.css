@@ -294,6 +294,8 @@ a { color: inherit; text-decoration: none; }
   .practice-count span { font-size: 8px; }
   .practice-toolbar { margin-top: 25px; }
   .speech-hint { display: none; }
+  .speech-hint.visible { display: block; position: fixed; z-index: 20; left: 14px; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); padding: 11px 14px; border: 1px solid #e7e8e0; border-radius: 12px; background: #fffdf8; color: #5d6b75; box-shadow: 0 5px 20px rgba(39,56,77,.14); text-align: center; line-height: 1.5; }
+  .speech-hint.visible[data-state="error"] { border-color: #efb6a8; color: #b94835; background: #fff4ef; }
   .card-grid { gap: 9px; padding-top: 13px; }
   .syllable-card { min-height: 181px; padding: 12px 10px; border-radius: 15px; }
   .card-kind { font-size: 9px; padding: 4px 6px; }

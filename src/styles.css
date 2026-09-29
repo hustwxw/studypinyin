@@ -207,7 +207,9 @@ a { color: inherit; text-decoration: none; }
 .card-number { color: #bec5c7; font-family: Georgia,serif; font-size: 13px; }
 .card-kind { background: #f2f6f2; color: #6a9b79; border-radius: 99px; padding: 5px 9px; font-size: 10px; font-weight: 800; }
 .syllable-card.rare .card-kind { background: #fff0ce; color: #b27b27; }
-.syllable-display { font-family: "Pinyin Sans", Arial, sans-serif; color: #27384d; font-size: clamp(36px, 3.4vw, 56px); font-weight: 700; line-height: 1.25; letter-spacing: 0; white-space: nowrap; padding: 12px 0 2px; }
+.syllable-display { display: block; width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font-family: "Pinyin Sans", Arial, sans-serif; color: #27384d; font-size: clamp(36px, 3.4vw, 56px); font-weight: 700; line-height: 1.25; letter-spacing: 0; white-space: nowrap; padding: 12px 0 2px; }
+.syllable-display:hover:not(:disabled) { color: #e66e56; }
+.syllable-display:disabled { cursor: not-allowed; }
 .syllable-plain { color: #a5b0b3; font-family: "Pinyin Sans", Arial, sans-serif; font-size: 12px; }
 .card-bottom { display: flex; align-items: end; justify-content: space-between; gap: 8px; margin-top: 17px; }
 .card-breakdown { color: #8c9ba2; font-size: 11px; line-height: 1.5; }

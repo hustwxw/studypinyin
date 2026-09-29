@@ -1,4 +1,4 @@
-const CACHE = 'studypinyin-v11';
+const CACHE = 'studypinyin-v12';
 const ASSETS = ['./', './index.html', './src/main.js?v=11', './src/pinyin-data.js', './src/voice-examples.js', './src/styles.css?v=11', './assets/noto-sans-pinyin.woff2', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -16,10 +16,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(fetch(event.request).then(async (response) => {
-    if (response.ok) {
-      const cache = await caches.open(CACHE);
-      await cache.put(event.request, response.clone());
+    if (response.status === 200) {
+      try {
+        const cache = await caches.open(CACHE);
+        await cache.put(event.request, response.clone());
+      } catch {}
     }
     return response;
-  }).catch(() => caches.match(event.request)));
+  }).catch(async () => {
+    try {
+      return await caches.match(event.request) || Response.error();
+    } catch {
+      return Response.error();
+    }
+  }));
 });

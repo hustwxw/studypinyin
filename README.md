@@ -20,6 +20,8 @@ npm run build
 
 打包结果位于 `dist/`，包含网页、脚本、样式、字体与离线缓存文件，可以直接部署到静态网站服务。`dist/` 纳入版本控制；修改源码后重新运行打包命令，提交更新后的文件。
 
+推送到 `main` 后，`.github/workflows/deploy-pages.yml` 会把 `dist/` 发布到 GitHub Pages。首次部署前，在仓库 `Settings → Pages → Build and deployment → Source` 中选择 `GitHub Actions`。
+
 ## 练习内容
 
 - 常用普通话音节与可选的少见、口语音节分开管理。

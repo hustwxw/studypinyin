@@ -1,5 +1,6 @@
 import { ALL_FINALS, ALL_INITIALS, ALL_MEDIALS, FINAL_GROUPS, INITIAL_GROUPS, SYLLABLES, TONES, WHOLE_READING, withTone } from './pinyin-data.js';
 import { VOICE_EXAMPLES } from './voice-examples.js';
+import { AUDIO_FILES } from './audio-data.js';
 
 const app = document.querySelector('#app');
 const SETTINGS_KEY = 'studypinyin-settings-v1';
@@ -31,8 +32,8 @@ let activeAudio;
 let speechStatusTimer;
 let speechRequest = 0;
 
-const audioPath = (entry) => `./assets/audio/${entry.spelling}${entry.tone}.mp3`;
-const hasAudio = (entry) => Boolean(VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`]);
+const audioPath = (entry) => `./assets/audio/audio-cmn/${AUDIO_FILES[`${entry.spelling}${entry.tone}`]}`;
+const hasAudio = (entry) => Boolean(AUDIO_FILES[`${entry.spelling}${entry.tone}`]);
 
 function readStorage(key, store) {
   try { return JSON.parse(store.getItem(key)); } catch { return null; }
@@ -146,20 +147,26 @@ function breakdown(item) {
 function practiceView() {
   if (!Array.isArray(state.deck) || !state.deck.length) return `${nav('practice')}<main class="missing-deck"><span>✳</span><h1>还没有拼音卡片</h1><p>先选择想练习的内容，再生成一组卡片吧。</p><a class="primary-button" href="#/">去选择 ${icon('arrow', 20)}</a></main>${footer()}`;
   return `${nav('practice')}<main class="practice-page"><div class="practice-top"><a href="#/" class="back-link">${icon('back', 18)} 返回设置</a><div class="practice-actions"><button type="button" class="quiet-button" data-regenerate>${icon('shuffle', 18)} 换一组</button></div></div>
-    <section class="practice-intro"><div><span class="eyebrow"><span class="eyebrow-star">✳</span> 你的专属练习</span><h1>今天的拼音卡片<span>。</span></h1><p>点击带调拼音即可听发音，也可点喇叭重复朗读。</p></div><div class="practice-count"><b>${state.deck.length}</b><span>张拼音卡片</span></div></section>
-    <div class="practice-toolbar"><div class="practice-legend"><span class="legend-dot"></span> 带调拼音 <span class="divider"></span> <span class="legend-rare"></span> 生僻音节</div><div class="speech-hint" id="speech-hint" role="status" aria-live="polite">点击拼音即可点读，音频会按需加载</div></div>
+    <section class="practice-intro"><div><span class="eyebrow"><span class="eyebrow-star">✳</span> 你的专属练习</span><h1>今天的拼音卡片<span>。</span></h1><p>带喇叭的卡片可以点击听发音，没有喇叭的卡片可自行拼读。</p></div><div class="practice-count"><b>${state.deck.length}</b><span>张拼音卡片</span></div></section>
+    <div class="practice-toolbar"><div class="practice-legend"><span class="legend-dot"></span> 带调拼音 <span class="divider"></span> <span class="legend-rare"></span> 生僻音节</div><div class="speech-hint" id="speech-hint" role="status" aria-live="polite">点击带喇叭的卡片即可点读，音频会按需加载</div></div>
     <section class="card-grid" aria-label="拼音练习卡片">${state.deck.map((entry, index) => {
       const item = SYLLABLES.find((candidate) => candidate.spelling === entry.spelling);
       if (!item) return '';
       const example = VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`];
       const available = hasAudio(entry);
-      return `<article class="syllable-card ${item.rare ? 'rare' : ''} ${state.playing === index ? 'playing' : ''}" data-card-play="${index}"><div class="card-top"><span class="card-number">${String(index + 1).padStart(2, '0')}</span><span class="card-kind">${item.kind}</span></div><button class="syllable-display" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}" ${available ? '' : 'disabled'}>${withTone(item.spelling, entry.tone)}</button><div class="syllable-plain">${item.spelling} · ${TONES.find((tone) => tone.value === entry.tone)?.name || ''}${example ? ` · 例${example.length > 1 ? '词' : '字'} ${example}` : ''}</div><div class="card-bottom"><span class="card-breakdown">${breakdown(item)}</span><button class="play-button" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}" ${available ? '' : 'disabled'}>${icon('sound', 21)}</button></div></article>`;
+      const display = available
+        ? `<button class="syllable-display" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}">${withTone(item.spelling, entry.tone)}</button>`
+        : `<span class="syllable-display">${withTone(item.spelling, entry.tone)}</span>`;
+      const playButton = available
+        ? `<button class="play-button" type="button" data-play="${index}" aria-label="朗读 ${withTone(item.spelling, entry.tone)}">${icon('sound', 21)}</button>`
+        : '';
+      return `<article class="syllable-card ${item.rare ? 'rare' : ''} ${state.playing === index ? 'playing' : ''}" ${available ? `data-card-play="${index}"` : ''}><div class="card-top"><span class="card-number">${String(index + 1).padStart(2, '0')}</span><span class="card-kind">${item.kind}</span></div>${display}<div class="syllable-plain">${item.spelling} · ${TONES.find((tone) => tone.value === entry.tone)?.name || ''}${example ? ` · 例${example.length > 1 ? '词' : '字'} ${example}` : ''}</div><div class="card-bottom"><span class="card-breakdown">${breakdown(item)}</span>${playButton}</div></article>`;
     }).join('')}</section><div class="practice-bottom"><span>读完这一组，给自己一个小小的掌声！</span><button class="secondary-button" type="button" data-regenerate>再来一组 ${icon('arrow', 19)}</button></div>
   </main>${footer()}`;
 }
 
 function footer() {
-  return `<footer class="site-footer"><span class="footer-brand">拼音星球 <span>✳</span></span><span>用好奇心，读懂每一个声音。</span><span>普通话拼音练习 · 支持手机、平板与电脑</span></footer>`;
+  return `<footer class="site-footer"><span class="footer-brand">拼音星球 <span>✳</span></span><span>用好奇心，读懂每一个声音。</span><span>普通话拼音练习 · 支持手机、平板与电脑<br/>真人录音：Chen Wang · <a href="https://github.com/hugolpz/audio-cmn" target="_blank" rel="noopener noreferrer">audio-cmn（CC BY-SA）</a></span></footer>`;
 }
 
 function render() {
@@ -241,11 +248,7 @@ function finishAudio(requestId, message, kind = 'info') {
 
 function speak(index) {
   const entry = state.deck[index];
-  if (!entry) return;
-  if (!hasAudio(entry)) {
-    setSpeechStatus('这个拼音组合暂时没有对应的标准例音。', 'error');
-    return;
-  }
+  if (!entry || !hasAudio(entry)) return;
   const requestId = ++speechRequest;
   if (activeAudio) {
     activeAudio.pause();
@@ -255,7 +258,7 @@ function speak(index) {
   activeAudio = audio;
   state.playing = index;
   document.querySelectorAll('.syllable-card').forEach((card, cardIndex) => card.classList.toggle('playing', cardIndex === index));
-  setSpeechStatus(`正在播放 ${withTone(entry.spelling, entry.tone)}${VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`] ? `（例${VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`].length > 1 ? '词' : '字'} ${VOICE_EXAMPLES[`${entry.spelling}${entry.tone}`]}）` : ''}`);
+  setSpeechStatus(`正在播放 ${withTone(entry.spelling, entry.tone)}`);
   audio.onended = () => finishAudio(requestId, '播放结束。');
   audio.onerror = () => finishAudio(requestId, '音频加载失败，请检查网络后重试。', 'error');
   audio.play().catch(() => finishAudio(requestId, '音频无法播放，请轻点拼音后重试。', 'error'));

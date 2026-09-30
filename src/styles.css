@@ -199,8 +199,9 @@ a { color: inherit; text-decoration: none; }
 .divider { height: 11px; border-left: 1px solid #d3d9d8; margin: 0 8px; }
 .speech-hint { font-size: 11px; }
 .card-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; padding-top: 21px; }
-.syllable-card { background: white; border: 1.5px solid #ebede8; border-radius: 20px; min-height: 222px; padding: 19px 18px 16px; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
-.syllable-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(40,52,66,.08); }
+.syllable-card { background: white; border: 1.5px solid #ebede8; border-radius: 20px; min-height: 222px; padding: 19px 18px 16px; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.syllable-card[data-card-play] { cursor: pointer; }
+.syllable-card[data-card-play]:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(40,52,66,.08); }
 .syllable-card.playing { border-color: #ee7058; box-shadow: 0 0 0 3px #fce3da; }
 .syllable-card.rare { background: #fffaf2; }
 .card-top { display: flex; justify-content: space-between; align-items: center; }
@@ -208,8 +209,8 @@ a { color: inherit; text-decoration: none; }
 .card-kind { background: #f2f6f2; color: #6a9b79; border-radius: 99px; padding: 5px 9px; font-size: 10px; font-weight: 800; }
 .syllable-card.rare .card-kind { background: #fff0ce; color: #b27b27; }
 .syllable-display { display: block; width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font-family: "Pinyin Font", Arial, sans-serif; color: #27384d; font-size: clamp(36px, 3.4vw, 56px); font-weight: 400; line-height: 1.25; letter-spacing: 0; white-space: nowrap; padding: 12px 0 2px; }
-.syllable-display:hover:not(:disabled) { color: #e66e56; }
-.syllable-display:disabled { cursor: not-allowed; }
+button.syllable-display:hover { color: #e66e56; }
+span.syllable-display { cursor: default; }
 .syllable-plain { color: #a5b0b3; font-family: "Pinyin Font", Arial, sans-serif; font-size: 12px; }
 .card-bottom { display: flex; align-items: end; justify-content: space-between; gap: 8px; margin-top: 17px; }
 .card-breakdown { color: #8c9ba2; font-size: 11px; line-height: 1.5; }

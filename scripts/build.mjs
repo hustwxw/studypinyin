@@ -12,6 +12,7 @@ const files = [
   'src/main.js',
   'src/pinyin-data.js',
   'src/voice-examples.js',
+  'src/audio-data.js',
   'src/styles.css',
   'assets/pinyin-regular.woff2',
   'assets/OFL-Pinyin-Font.txt',

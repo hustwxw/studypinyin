@@ -39,4 +39,4 @@ npm run build
 
 音频文件使用 [Kokoro-82M-v1.1-zh](https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh) Apache 2.0 中文语音模型生成，使用说明和许可见该模型仓库。需要更新音节音频时，安装 `requirements-audio.txt` 后运行 `python scripts/generate-audio.py`；模型权重会下载到本机缓存，不会打入网页包。音频输出为 48 kbps 单声道 MP3，网页只在点读时按需加载，并通过 Service Worker 缓存已播放文件。
 
-带调拼音使用项目内置的 [Noto Sans](https://github.com/google/fonts/tree/main/ofl/notosans) 字体子集，避免不同终端缺字时声调与元音分离。字体遵循 SIL Open Font License 1.1，许可文本见 `assets/OFL-Noto-Sans.txt`。
+拼音练习使用 [宝宝字帖拼音字体](https://github.com/jaywcjlove/pinyin-font) 1.10.2 常规体，带调字母采用单层 `a` 字形，适合拼音识读。字体遵循 SIL Open Font License 1.1，许可文本见 `assets/OFL-Pinyin-Font.txt`。

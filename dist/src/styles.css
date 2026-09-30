@@ -1,8 +1,8 @@
 @font-face {
-  font-family: "Pinyin Sans";
-  src: url("../assets/noto-sans-pinyin.woff2") format("woff2");
+  font-family: "Pinyin Font";
+  src: url("../assets/pinyin-regular.woff2") format("woff2");
   font-style: normal;
-  font-weight: 400 900;
+  font-weight: 400;
   font-display: swap;
   unicode-range: U+0020-024F, U+0300-030F, U+1E00-1EFF;
 }
@@ -60,14 +60,14 @@ a { color: inherit; text-decoration: none; }
 .orbit { position: absolute; display: block; border-radius: 50%; border: 2px dashed rgba(255,255,255,.75); }
 .orbit-one { width: 410px; height: 410px; right: 25px; top: -24px; transform: rotate(-25deg); }
 .orbit-two { width: 252px; height: 252px; right: 108px; top: 56px; border-color: rgba(235,104,79,.20); }
-.art-card { width: 92px; height: 112px; display: grid; place-items: center; position: absolute; border: 2px solid #27384a; background: #fff9ee; color: #26384a; box-shadow: 7px 9px 0 rgba(42,52,67,.13); border-radius: 19px; font-family: "Pinyin Sans", Arial, sans-serif; font-size: 56px; font-weight: 700; }
+.art-card { width: 92px; height: 112px; display: grid; place-items: center; position: absolute; border: 2px solid #27384a; background: #fff9ee; color: #26384a; box-shadow: 7px 9px 0 rgba(42,52,67,.13); border-radius: 19px; font-family: "Pinyin Font", Arial, sans-serif; font-size: 56px; font-weight: 700; }
 .art-b { top: 94px; right: 351px; transform: rotate(-11deg); }
 .art-i { top: 60px; right: 215px; transform: rotate(8deg); background: #e0efdb; }
 .art-ao { top: 105px; right: 66px; transform: rotate(11deg); background: #f8cab4; width: 115px; }
 .art-plus { position: absolute; color: #e2674e; font-weight: 900; font-size: 32px; }
 .art-plus-one { top: 131px; right: 317px; }
 .art-plus-two { top: 132px; right: 185px; }
-.art-result { position: absolute; right: 121px; bottom: 35px; padding: 7px 23px 10px; border-radius: 14px; background: #243348; color: white; font-family: "Pinyin Sans", Arial, sans-serif; font-size: 42px; font-weight: 700; transform: rotate(-7deg); box-shadow: 5px 8px 0 rgba(25,40,57,.18); }
+.art-result { position: absolute; right: 121px; bottom: 35px; padding: 7px 23px 10px; border-radius: 14px; background: #243348; color: white; font-family: "Pinyin Font", Arial, sans-serif; font-size: 42px; font-weight: 700; transform: rotate(-7deg); box-shadow: 5px 8px 0 rgba(25,40,57,.18); }
 .art-result span { color: #f7c878; font-family: sans-serif; font-size: 26px; }
 .art-note { position: absolute; top: 34px; right: 64px; color: #ba754e; font-size: 13px; font-weight: 800; transform: rotate(8deg); }
 .spark { position: absolute; color: #ed6a51; z-index: 3; }
@@ -98,7 +98,7 @@ a { color: inherit; text-decoration: none; }
 .tone-card { min-height: 79px; display: flex; align-items: center; position: relative; text-align: left; gap: 9px; padding: 10px 9px; border: 1.5px solid #e8eceb; background: #fbfcfb; border-radius: 13px; transition: .18s ease; }
 .tone-card:hover { border-color: #edb6a9; }
 .tone-card.selected { background: #fff4ef; border-color: #ef7159; }
-.tone-symbol { font-family: "Pinyin Sans", Arial, sans-serif; color: #e76d58; font-size: 33px; line-height: 1.15; font-weight: 700; }
+.tone-symbol { font-family: "Pinyin Font", Arial, sans-serif; color: #e76d58; font-size: 33px; line-height: 1.15; font-weight: 700; }
 .tone-info { display: flex; flex-direction: column; }
 .tone-info strong { font-size: 12px; white-space: nowrap; }
 .tone-info small { margin-top: 4px; font-size: 10px; color: #a2aab0; white-space: nowrap; }
@@ -122,7 +122,7 @@ a { color: inherit; text-decoration: none; }
 .chip-group-actions button { border: 1px solid #e9e9e2; border-radius: 6px; padding: 3px 7px; background: #faf9f5; color: #62717b; font-size: 10px; font-weight: 700; white-space: nowrap; }
 .chip-group-actions button:hover { border-color: #edb6a9; color: #da654d; background: #fff4ef; }
 .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-.chip { min-width: 37px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-height: 31px; padding: 4px 9px; border-radius: 8px; border: 1px solid #e4e8e7; background: #f9fbfa; color: #556574; font-family: "Pinyin Sans", Arial, sans-serif; font-size: 15px; font-weight: 750; }
+.chip { min-width: 37px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-height: 31px; padding: 4px 9px; border-radius: 8px; border: 1px solid #e4e8e7; background: #f9fbfa; color: #556574; font-family: "Pinyin Font", Arial, sans-serif; font-size: 15px; font-weight: 750; }
 .chip.selected { color: #da654d; background: #fff0eb; border-color: #f1b7a8; }
 .chip-check { line-height: 0; }
 .medial-filter { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 2px 0; }
@@ -166,9 +166,9 @@ a { color: inherit; text-decoration: none; }
 .split-example span:nth-of-type(2) { background: #f6cc9d; }
 .split-example span:nth-of-type(3) { background: #cee1cd; }
 .split-example small { font-size: 10px; color: #7f8c92; }
-.split-example b { font-family: "Pinyin Sans", Arial, sans-serif; font-size: 28px; line-height: 1.2; }
+.split-example b { font-family: "Pinyin Font", Arial, sans-serif; font-size: 28px; line-height: 1.2; }
 .split-example i { font-style: normal; font-size: 20px; color: #e8c078; }
-.split-result { padding: 13px 0 15px; border-bottom: 1px dashed #657080; font-family: "Pinyin Sans", Arial, sans-serif; font-size: 21px; letter-spacing: .5px; }
+.split-result { padding: 13px 0 15px; border-bottom: 1px dashed #657080; font-family: "Pinyin Font", Arial, sans-serif; font-size: 21px; letter-spacing: .5px; }
 .split-result span { color: #f9d082; padding: 0 4px; }
 .info-card p { color: #c0cbd4; font-size: 12px; line-height: 1.85; margin: 16px 0 0; }
 .info-card p strong { color: #f8d18f; }
@@ -207,10 +207,10 @@ a { color: inherit; text-decoration: none; }
 .card-number { color: #bec5c7; font-family: Georgia,serif; font-size: 13px; }
 .card-kind { background: #f2f6f2; color: #6a9b79; border-radius: 99px; padding: 5px 9px; font-size: 10px; font-weight: 800; }
 .syllable-card.rare .card-kind { background: #fff0ce; color: #b27b27; }
-.syllable-display { display: block; width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font-family: "Pinyin Sans", Arial, sans-serif; color: #27384d; font-size: clamp(36px, 3.4vw, 56px); font-weight: 700; line-height: 1.25; letter-spacing: 0; white-space: nowrap; padding: 12px 0 2px; }
+.syllable-display { display: block; width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font-family: "Pinyin Font", Arial, sans-serif; color: #27384d; font-size: clamp(36px, 3.4vw, 56px); font-weight: 400; line-height: 1.25; letter-spacing: 0; white-space: nowrap; padding: 12px 0 2px; }
 .syllable-display:hover:not(:disabled) { color: #e66e56; }
 .syllable-display:disabled { cursor: not-allowed; }
-.syllable-plain { color: #a5b0b3; font-family: "Pinyin Sans", Arial, sans-serif; font-size: 12px; }
+.syllable-plain { color: #a5b0b3; font-family: "Pinyin Font", Arial, sans-serif; font-size: 12px; }
 .card-bottom { display: flex; align-items: end; justify-content: space-between; gap: 8px; margin-top: 17px; }
 .card-breakdown { color: #8c9ba2; font-size: 11px; line-height: 1.5; }
 .play-button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 12px; background: #fff0e9; color: #e66e56; flex: 0 0 auto; }

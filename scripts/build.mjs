@@ -13,8 +13,8 @@ const files = [
   'src/pinyin-data.js',
   'src/voice-examples.js',
   'src/styles.css',
-  'assets/noto-sans-pinyin.woff2',
-  'assets/OFL-Noto-Sans.txt',
+  'assets/pinyin-regular.woff2',
+  'assets/OFL-Pinyin-Font.txt',
 ];
 
 if (path.dirname(output) !== root) throw new Error('打包目录必须位于项目根目录下');

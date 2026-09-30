@@ -16,7 +16,7 @@ const types = {
 const publicPaths = new Set([
   '/', '/index.html', '/icon.svg', '/manifest.webmanifest', '/sw.js',
   '/src/main.js', '/src/pinyin-data.js', '/src/voice-examples.js', '/src/styles.css',
-  '/assets/noto-sans-pinyin.woff2',
+  '/assets/pinyin-regular.woff2',
 ]);
 
 createServer(async (request, response) => {

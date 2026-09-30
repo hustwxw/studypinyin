@@ -2,3 +2,6 @@
 Thumbs.db
 node_modules/
 .venv/
+android/build/
+android/output/
+android/.signing/

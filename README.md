@@ -14,6 +14,12 @@ npm run dev
 
 ## 打包部署
 
+### Android APK
+
+运行 `npm run build:android`，生成可直接安装、内置全部音频的离线 APK。构建环境、签名备份和手机安装说明见 [Android 打包说明](android/README.md)。
+
+### 网页部署
+
 ```bash
 npm run build
 ```

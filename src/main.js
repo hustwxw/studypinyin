@@ -29,6 +29,7 @@ const state = {
 };
 
 let activeAudio;
+window.addEventListener('pinyin:pause', () => activeAudio?.pause());
 let speechStatusTimer;
 let speechRequest = 0;
 
